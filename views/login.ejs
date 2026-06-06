@@ -1,0 +1,28 @@
+<%- include("partials/header", { title }) %>
+
+<section class="auth-shell">
+  <form class="auth-panel" method="post" action="/login" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="returnTo" value="<%= returnTo %>">
+
+    <h1>Anmeldung</h1>
+
+    <% if (error) { %>
+      <p class="auth-error"><%= error %></p>
+    <% } %>
+
+    <label>
+      Benutzername
+      <input type="text" name="username" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="Michael, Andrea oder Franka" required autofocus>
+    </label>
+
+    <label>
+      Passwort
+      <input type="password" name="password" autocomplete="current-password" required>
+    </label>
+
+    <button class="button button-primary" type="submit">Anmelden</button>
+  </form>
+</section>
+
+<%- include("partials/footer") %>

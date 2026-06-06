@@ -76,6 +76,7 @@
           <th>Lärmart</th>
           <th>Intensität</th>
           <th>Auswirkung</th>
+          <th>Erfasst von</th>
           <th></th>
         </tr>
       </thead>
@@ -89,6 +90,7 @@
             <td data-label="Lärmart"><%= entry.laermart %></td>
             <td data-label="Intensität"><%= entry.intensitaet %>/5</td>
             <td data-label="Auswirkung"><%= entry.auswirkung %></td>
+            <td data-label="Erfasst von"><%= entry.created_by_name || "-" %></td>
             <td class="row-actions">
               <a class="button button-small" href="/entries/<%= entry.id %>">Details</a>
             </td>

@@ -1,21 +1,22 @@
 const db = require("./db");
 
 const ENTRY_FIELDS = `
-  id,
-  to_char(datum, 'YYYY-MM-DD') AS datum,
-  to_char(beginn_uhrzeit, 'HH24:MI') AS beginn_uhrzeit,
-  CASE WHEN ende_uhrzeit IS NULL THEN NULL ELSE to_char(ende_uhrzeit, 'HH24:MI') END AS ende_uhrzeit,
-  dauer_minuten,
-  wahrnehmungsort,
-  laermart,
-  intensitaet,
-  auswirkung,
-  vermuteter_ursprung,
-  zeugen,
-  notiz,
-  pruefungshinweis,
-  to_char(created_at AT TIME ZONE 'Europe/Berlin', 'YYYY-MM-DD HH24:MI') AS created_at,
-  to_char(updated_at AT TIME ZONE 'Europe/Berlin', 'YYYY-MM-DD HH24:MI') AS updated_at
+  laermereignisse.id,
+  to_char(laermereignisse.datum, 'YYYY-MM-DD') AS datum,
+  to_char(laermereignisse.beginn_uhrzeit, 'HH24:MI') AS beginn_uhrzeit,
+  CASE WHEN laermereignisse.ende_uhrzeit IS NULL THEN NULL ELSE to_char(laermereignisse.ende_uhrzeit, 'HH24:MI') END AS ende_uhrzeit,
+  laermereignisse.dauer_minuten,
+  laermereignisse.wahrnehmungsort,
+  laermereignisse.laermart,
+  laermereignisse.intensitaet,
+  laermereignisse.auswirkung,
+  laermereignisse.vermuteter_ursprung,
+  laermereignisse.zeugen,
+  laermereignisse.notiz,
+  laermereignisse.pruefungshinweis,
+  app_users.display_name AS created_by_name,
+  to_char(laermereignisse.created_at AT TIME ZONE 'Europe/Berlin', 'YYYY-MM-DD HH24:MI') AS created_at,
+  to_char(laermereignisse.updated_at AT TIME ZONE 'Europe/Berlin', 'YYYY-MM-DD HH24:MI') AS updated_at
 `;
 
 function buildFilterWhere(filters = {}) {
@@ -24,12 +25,12 @@ function buildFilterWhere(filters = {}) {
 
   if (filters.von) {
     params.push(filters.von);
-    clauses.push(`datum >= $${params.length}`);
+    clauses.push(`laermereignisse.datum >= $${params.length}`);
   }
 
   if (filters.bis) {
     params.push(filters.bis);
-    clauses.push(`datum <= $${params.length}`);
+    clauses.push(`laermereignisse.datum <= $${params.length}`);
   }
 
   return {
@@ -44,8 +45,9 @@ async function listEntries(filters) {
     `
       SELECT ${ENTRY_FIELDS}
       FROM laermereignisse
+      LEFT JOIN app_users ON app_users.id = laermereignisse.created_by_user_id
       ${where}
-      ORDER BY datum DESC, beginn_uhrzeit DESC, id DESC
+      ORDER BY laermereignisse.datum DESC, laermereignisse.beginn_uhrzeit DESC, laermereignisse.id DESC
     `,
     params
   );
@@ -58,7 +60,8 @@ async function getEntry(id) {
     `
       SELECT ${ENTRY_FIELDS}
       FROM laermereignisse
-      WHERE id = $1
+      LEFT JOIN app_users ON app_users.id = laermereignisse.created_by_user_id
+      WHERE laermereignisse.id = $1
     `,
     [id]
   );
@@ -66,7 +69,7 @@ async function getEntry(id) {
   return result.rows[0] || null;
 }
 
-async function createEntry(data) {
+async function createEntry(data, userId) {
   const result = await db.query(
     `
       INSERT INTO laermereignisse (
@@ -81,9 +84,10 @@ async function createEntry(data) {
         vermuteter_ursprung,
         zeugen,
         notiz,
-        pruefungshinweis
+        pruefungshinweis,
+        created_by_user_id
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING id
     `,
     [
@@ -98,7 +102,8 @@ async function createEntry(data) {
       data.vermuteter_ursprung,
       data.zeugen,
       data.notiz,
-      data.pruefungshinweis
+      data.pruefungshinweis,
+      userId
     ]
   );
 

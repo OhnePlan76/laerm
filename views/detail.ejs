@@ -8,7 +8,8 @@
   <div class="toolbar-actions">
     <a class="button" href="/">Zurück</a>
     <a class="button" href="/entries/<%= entry.id %>/edit">Bearbeiten</a>
-    <form method="post" action="/entries/<%= entry.id %>/delete" onsubmit="return confirm('Diesen Eintrag wirklich löschen?');">
+    <form method="post" action="/entries/<%= entry.id %>/delete" data-confirm="Diesen Eintrag wirklich löschen?">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <button class="button button-danger" type="submit">Löschen</button>
     </form>
   </div>
@@ -47,6 +48,10 @@
     <div>
       <dt>Auswirkung</dt>
       <dd><%= entry.auswirkung %></dd>
+    </div>
+    <div>
+      <dt>Erfasst von</dt>
+      <dd><%= entry.created_by_name || "-" %></dd>
     </div>
     <div>
       <dt>Vermuteter Ursprung</dt>

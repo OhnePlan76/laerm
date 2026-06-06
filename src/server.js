@@ -1,6 +1,9 @@
 require("dotenv").config();
 
 const express = require("express");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const session = require("express-session");
 const path = require("path");
 const { runMigrations } = require("./migrate");
 const repository = require("./repository");
@@ -8,21 +11,231 @@ const { summarize } = require("./summary");
 const { validateEntry, validateFilters } = require("./validation");
 const { LAERMARTEN, AUSWIRKUNGEN, WAHRNEHMUNGSORTE } = require("./options");
 const { toCsv, toPdfStream } = require("./exporters");
+const {
+  productionLike,
+  assertSecurityConfig,
+  newToken,
+  safeReturnTo,
+  tokensMatch
+} = require("./security");
+const {
+  authenticateUser,
+  getUserById,
+  setPassword,
+  verifyCurrentPassword,
+  ensureBootstrapUsers
+} = require("./users");
+const { validatePassword } = require("./passwords");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "..", "views"));
+app.set("trust proxy", 1);
+
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+        frameAncestors: ["'none'"],
+        imgSrc: ["'self'", "data:"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'"]
+      }
+    }
+  })
+);
+
+app.use((req, res, next) => {
+  res.setHeader("X-Robots-Tag", "noindex, nofollow");
+  next();
+});
+
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 300,
+    standardHeaders: true,
+    legacyHeaders: false
+  })
+);
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "..", "public")));
+
+app.use(
+  session({
+    name: "lp.sid",
+    secret: process.env.SESSION_SECRET || "dev-only-change-me",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: productionLike,
+      maxAge: 12 * 60 * 60 * 1000
+    }
+  })
+);
 
 app.locals.options = {
   laermarten: LAERMARTEN,
   auswirkungen: AUSWIRKUNGEN,
   wahrnehmungsorte: WAHRNEHMUNGSORTE
 };
+app.locals.isAuthenticated = false;
+app.locals.csrfToken = "";
+app.locals.currentUser = null;
+
+function ensureCsrfToken(req, res, next) {
+  if (!req.session.csrfToken) {
+    req.session.csrfToken = newToken();
+  }
+
+  res.locals.csrfToken = req.session.csrfToken;
+  res.locals.isAuthenticated = Boolean(req.session.authenticated);
+  res.locals.currentUser = req.session.user || null;
+  next();
+}
+
+function csrfProtection(req, res, next) {
+  if (!["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
+    return next();
+  }
+
+  if (!tokensMatch(req.body._csrf, req.session.csrfToken)) {
+    return res.status(403).render("error", {
+      title: "Sicherheitsprüfung fehlgeschlagen",
+      message: "Die Anfrage konnte nicht bestätigt werden. Bitte Seite neu laden und erneut versuchen."
+    });
+  }
+
+  return next();
+}
+
+function requireAuth(req, res, next) {
+  if (!req.session.authenticated || !req.session.user) {
+    return res.redirect(`/login?returnTo=${encodeURIComponent(req.originalUrl)}`);
+  }
+
+  req.currentUser = req.session.user;
+  res.locals.currentUser = req.currentUser;
+  return next();
+}
+
+function requirePasswordReady(req, res, next) {
+  if (!req.currentUser || !req.currentUser.mustChangePassword) {
+    return next();
+  }
+
+  return res.redirect("/password/change");
+}
+
+app.use(ensureCsrfToken);
+app.use(csrfProtection);
+
+app.get("/login", (req, res) => {
+  if (req.session.authenticated) {
+    return res.redirect("/");
+  }
+
+  return res.render("login", {
+    title: "Anmeldung",
+    error: "",
+    returnTo: safeReturnTo(req.query.returnTo)
+  });
+});
+
+app.post(
+  "/login",
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    standardHeaders: true,
+    legacyHeaders: false
+  }),
+  asyncRoute(async (req, res, next) => {
+    const returnTo = safeReturnTo(req.body.returnTo);
+    const user = await authenticateUser(req.body.username, req.body.password);
+
+    if (!user) {
+      return res.status(401).render("login", {
+        title: "Anmeldung",
+        error: "Benutzername oder Passwort ist falsch.",
+        returnTo
+      });
+    }
+
+    return req.session.regenerate((error) => {
+      if (error) {
+        return next(error);
+      }
+
+      req.session.authenticated = true;
+      req.session.user = user;
+      req.session.csrfToken = newToken();
+      return res.redirect(user.mustChangePassword ? "/password/change" : returnTo);
+    });
+  })
+);
+
+app.use(requireAuth);
+
+app.post("/logout", (req, res, next) => {
+  req.session.destroy((error) => {
+    if (error) {
+      return next(error);
+    }
+
+    res.clearCookie("lp.sid");
+    return res.redirect("/login");
+  });
+});
+
+app.get("/password/change", (req, res) => {
+  res.render("password", {
+    title: req.currentUser.mustChangePassword ? "Passwort festlegen" : "Passwort ändern",
+    errors: {},
+    mustChangePassword: req.currentUser.mustChangePassword
+  });
+});
+
+app.post(
+  "/password/change",
+  asyncRoute(async (req, res) => {
+    const mustChangePassword = req.currentUser.mustChangePassword;
+    const errors = validatePassword(
+      req.body.password,
+      req.body.password_confirmation,
+      req.currentUser.username
+    );
+
+    if (!mustChangePassword) {
+      const currentMatches = await verifyCurrentPassword(req.currentUser.id, req.body.current_password);
+      if (!currentMatches) {
+        errors.current_password = "Das aktuelle Passwort ist falsch.";
+      }
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(422).render("password", {
+        title: mustChangePassword ? "Passwort festlegen" : "Passwort ändern",
+        errors,
+        mustChangePassword
+      });
+    }
+
+    const user = await setPassword(req.currentUser.id, req.body.password);
+    req.session.user = user;
+    return res.redirect("/");
+  })
+);
+
+app.use(requirePasswordReady);
 
 function emptyEntry() {
   return {
@@ -95,7 +308,7 @@ app.post(
       });
     }
 
-    const id = await repository.createEntry(result.data);
+    const id = await repository.createEntry(result.data, req.currentUser.id);
     return res.redirect(`/entries/${id}`);
   })
 );
@@ -238,7 +451,9 @@ app.use((error, req, res, next) => {
 });
 
 async function start() {
+  assertSecurityConfig();
   await runMigrations();
+  await ensureBootstrapUsers();
   app.listen(PORT, () => {
     console.log(`Lärmprotokoll läuft auf Port ${PORT}`);
   });

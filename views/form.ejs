@@ -8,6 +8,8 @@
 </section>
 
 <form class="entry-form quick-form panel" method="post" action="<%= action %>" data-dirty-check data-dirty-on-load="<%= dirtyOnLoad ? "true" : "false" %>" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
   <div class="quick-grid time-grid">
     <label>
       Datum

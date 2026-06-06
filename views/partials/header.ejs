@@ -3,8 +3,20 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
     <title><%= title %></title>
     <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
   </head>
   <body>
     <main class="wrap page">
+      <% if (isAuthenticated && currentUser) { %>
+        <div class="session-bar">
+          <span>Angemeldet als <strong><%= currentUser.displayName %></strong></span>
+          <a href="/password/change">Passwort ändern</a>
+          <form method="post" action="/logout">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="link-button" type="submit">Abmelden</button>
+          </form>
+        </div>
+      <% } %>

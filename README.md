@@ -26,6 +26,10 @@ Es gibt bewusst keine Audio- oder Videoaufnahmefunktion.
 - PostgreSQL über `DATABASE_URL`
 - SQL-Migrationen im Ordner `migrations`
 - Automatischer Migrationslauf beim App-Start
+- Benutzerkonten für Michael, Andrea und Franka
+- Erstlogin über Railway-Startpasswörter mit erzwungenem Passwortwechsel
+- Sessions mit CSRF-Schutz für Formularaktionen
+- Security-Headers und Rate-Limit
 - Schlichtes responsives HTML/CSS ohne UI-Library
 
 ## Lokale Entwicklung
@@ -47,6 +51,10 @@ Passe in `.env` die Variable `DATABASE_URL` an:
 ```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/laermprotokoll
 PORT=3000
+SESSION_SECRET=bitte-langen-zufaelligen-wert-setzen
+BOOTSTRAP_PASSWORD_MICHAEL=erstlogin-michael-aendern
+BOOTSTRAP_PASSWORD_ANDREA=erstlogin-andrea-aendern
+BOOTSTRAP_PASSWORD_FRANKA=erstlogin-franka-aendern
 ```
 
 Migrationen manuell ausführen:
@@ -68,13 +76,21 @@ Die App läuft lokal unter `http://localhost:3000`.
 1. Repository zu GitHub pushen.
 2. In Railway ein neues Projekt aus dem GitHub-Repository erstellen.
 3. Eine PostgreSQL-Datenbank im selben Railway-Projekt hinzufügen.
-4. Im Webservice die Variable setzen:
+4. Im Webservice diese Variablen setzen:
 
 ```env
 DATABASE_URL=${{Postgres.DATABASE_URL}}
+SESSION_SECRET=ein-langer-zufaelliger-geheimer-wert
+BOOTSTRAP_PASSWORD_MICHAEL=startpasswort-fuer-michael
+BOOTSTRAP_PASSWORD_ANDREA=startpasswort-fuer-andrea
+BOOTSTRAP_PASSWORD_FRANKA=startpasswort-fuer-franka
 ```
 
 5. Deploy starten. Die App nutzt `process.env.PORT` und startet über `npm run start`.
+
+In Railway/Produktion startet die App absichtlich nicht, wenn `SESSION_SECRET` fehlt. Beim ersten Start müssen außerdem die drei `BOOTSTRAP_PASSWORD_*`-Variablen gesetzt sein, damit die Benutzer Michael, Andrea und Franka angelegt werden können.
+
+Nach dem ersten Login muss jede Person ein eigenes Passwort setzen. Bestehende Benutzer werden beim Start nicht überschrieben. Die Startpasswort-Variablen können später stehen bleiben oder nach erfolgreichem Erstlogin entfernt werden.
 
 Die Datei `railway.json` setzt den Start-Command auf `npm run start`. Railway kann Node-Projekte auch automatisch erkennen; die explizite Einstellung macht das Deployment hier eindeutig.
 
@@ -83,6 +99,16 @@ Nützliche Railway-Dokumentation:
 - [PostgreSQL auf Railway](https://docs.railway.com/databases/postgresql/)
 - [Railway Variablen](https://docs.railway.com/variables)
 - [Railway Start Command](https://docs.railway.com/guides/start-command)
+
+## Sicherheit und Datenschutz
+
+- Die App ist nach dem Deploy durch Login geschützt.
+- Passwörter werden nicht im Klartext gespeichert, sondern mit `scrypt` und individuellem Salt gehasht.
+- Alle schreibenden Formulare verwenden CSRF-Tokens.
+- `helmet` setzt HTTP-Sicherheitsheader.
+- Ein Rate-Limit reduziert einfache automatisierte Angriffe.
+- `X-Robots-Tag` und Meta-Robots verhindern Suchmaschinenindexierung.
+- Die Datenbankverbindung und Passwörter gehören nur in Railway-Variablen, nicht ins Repository.
 
 ## Datenbank
 

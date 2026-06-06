@@ -53,6 +53,32 @@ a:hover {
   padding: 28px 0 56px;
 }
 
+.session-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.link-button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  padding: 0;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
 .page-head,
 .toolbar {
   display: flex;
@@ -339,7 +365,7 @@ textarea:focus,
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 860px;
+  min-width: 960px;
 }
 
 th,
@@ -406,6 +432,38 @@ dd {
   text-align: center;
 }
 
+.auth-shell {
+  min-height: calc(100vh - 120px);
+  display: grid;
+  align-items: center;
+  justify-items: center;
+}
+
+.auth-panel {
+  width: min(420px, 100%);
+  display: grid;
+  gap: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+.auth-panel h1 {
+  font-size: 2rem;
+}
+
+.auth-error {
+  margin: 0;
+  border: 1px solid #e1a2a2;
+  border-radius: 8px;
+  background: #fff4f4;
+  color: var(--danger);
+  padding: 10px 12px;
+  font-weight: 800;
+}
+
 @media (max-width: 900px) {
   .summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -465,6 +523,14 @@ dd {
 
   .quick-form {
     padding: 14px;
+  }
+
+  .auth-panel {
+    padding: 18px;
+  }
+
+  .session-bar {
+    justify-content: flex-start;
   }
 
   .sticky-actions {

@@ -33,6 +33,7 @@ function toCsv(entries, summary, filters) {
       "Lärmart",
       "Intensität",
       "Auswirkung",
+      "Erfasst von",
       "Vermuteter Ursprung",
       "Zeugen",
       "Notiz",
@@ -54,6 +55,7 @@ function toCsv(entries, summary, filters) {
         entry.laermart,
         entry.intensitaet,
         entry.auswirkung,
+        entry.created_by_name,
         entry.vermuteter_ursprung,
         entry.zeugen,
         entry.notiz,
@@ -133,6 +135,7 @@ function toPdfStream(entries, summary, filters, stream) {
     doc.text(`${entry.laermart} · Intensität ${entry.intensitaet}/5 · ${entry.dauer_minuten} Minuten`);
     doc.text(`Wahrnehmungsort: ${entry.wahrnehmungsort}`);
     doc.text(`Auswirkung: ${entry.auswirkung}`);
+    doc.text(`Erfasst von: ${entry.created_by_name || "-"}`);
 
     if (entry.vermuteter_ursprung) {
       doc.text(`Vermuteter Ursprung: ${entry.vermuteter_ursprung}`);
