@@ -6,6 +6,7 @@
     <p class="muted">Erstellt am <%= entry.created_at %>, zuletzt aktualisiert am <%= entry.updated_at %>.</p>
   </div>
   <div class="toolbar-actions">
+    <a class="button" href="/">Zurück</a>
     <a class="button" href="/entries/<%= entry.id %>/edit">Bearbeiten</a>
     <form method="post" action="/entries/<%= entry.id %>/delete" onsubmit="return confirm('Diesen Eintrag wirklich löschen?');">
       <button class="button button-danger" type="submit">Löschen</button>

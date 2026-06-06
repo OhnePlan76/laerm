@@ -14,12 +14,34 @@ function trim(value) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function timeToMinutes(value) {
+  if (!TIME_PATTERN.test(value || "")) {
+    return null;
+  }
+  const [hours, minutes] = value.split(":").map(Number);
+  return hours * 60 + minutes;
+}
+
+function calculateDurationMinutes(startTime, endTime) {
+  const start = timeToMinutes(startTime);
+  const end = timeToMinutes(endTime);
+
+  if (start === null || end === null) {
+    return null;
+  }
+
+  return end >= start ? end - start : end + 24 * 60 - start;
+}
+
 function normalizeEntry(body) {
+  const beginn_uhrzeit = trim(body.beginn_uhrzeit);
+  const ende_uhrzeit = trim(body.ende_uhrzeit);
+
   return {
     datum: trim(body.datum),
-    beginn_uhrzeit: trim(body.beginn_uhrzeit),
-    ende_uhrzeit: trim(body.ende_uhrzeit) || null,
-    dauer_minuten: Number.parseInt(body.dauer_minuten, 10),
+    beginn_uhrzeit,
+    ende_uhrzeit,
+    dauer_minuten: calculateDurationMinutes(beginn_uhrzeit, ende_uhrzeit),
     wahrnehmungsort: trim(body.wahrnehmungsort),
     laermart: trim(body.laermart),
     intensitaet: Number.parseInt(body.intensitaet, 10),
@@ -43,12 +65,16 @@ function validateEntry(body) {
     errors.beginn_uhrzeit = "Bitte eine gültige Beginn-Uhrzeit angeben.";
   }
 
-  if (data.ende_uhrzeit && !TIME_PATTERN.test(data.ende_uhrzeit)) {
+  if (!TIME_PATTERN.test(data.ende_uhrzeit)) {
     errors.ende_uhrzeit = "Bitte eine gültige Ende-Uhrzeit angeben.";
   }
 
-  if (!Number.isInteger(data.dauer_minuten) || data.dauer_minuten < 0) {
-    errors.dauer_minuten = "Bitte eine Dauer ab 0 Minuten angeben.";
+  if (
+    TIME_PATTERN.test(data.beginn_uhrzeit) &&
+    TIME_PATTERN.test(data.ende_uhrzeit) &&
+    !Number.isInteger(data.dauer_minuten)
+  ) {
+    errors.ende_uhrzeit = "Die Dauer konnte nicht berechnet werden.";
   }
 
   if (!WAHRNEHMUNGSORTE.includes(data.wahrnehmungsort)) {
@@ -87,5 +113,6 @@ function validateFilters(query) {
 
 module.exports = {
   validateEntry,
-  validateFilters
+  validateFilters,
+  calculateDurationMinutes
 };

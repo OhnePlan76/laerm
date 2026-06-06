@@ -8,6 +8,7 @@ Es gibt bewusst keine Audio- oder Videoaufnahmefunktion.
 
 - Liste aller Lärmeinträge
 - Eintrag erfassen, ansehen, bearbeiten und löschen
+- automatische Dauerberechnung aus Beginn und Ende
 - Filter nach Datum von/bis
 - CSV-Export
 - PDF-Export als druckbares Lärmprotokoll

@@ -41,27 +41,6 @@ a:hover {
   margin: 0 auto;
 }
 
-.site-header {
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
-}
-
-.header-row {
-  min-height: 68px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.brand {
-  color: var(--text);
-  font-size: 1.15rem;
-  font-weight: 800;
-  letter-spacing: 0;
-}
-
-.top-nav,
 .toolbar-actions,
 .form-actions {
   display: flex;
@@ -70,12 +49,8 @@ a:hover {
   flex-wrap: wrap;
 }
 
-.top-nav {
-  justify-content: flex-end;
-}
-
 .page {
-  padding: 32px 0 56px;
+  padding: 28px 0 56px;
 }
 
 .page-head,
@@ -108,7 +83,7 @@ h2 {
 
 .button {
   appearance: none;
-  min-height: 40px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -157,9 +132,14 @@ h2 {
   font-size: 0.92rem;
 }
 
+.button-quiet {
+  background: #f4f7f9;
+}
+
 .panel,
 .detail-panel,
-.empty-state {
+.empty-state,
+.filter-panel {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -169,6 +149,23 @@ h2 {
 .panel {
   padding: 18px;
   margin-bottom: 20px;
+}
+
+.filter-panel {
+  margin-bottom: 18px;
+  padding: 0;
+}
+
+.filter-panel summary {
+  cursor: pointer;
+  padding: 16px 18px;
+  color: #27313d;
+  font-weight: 800;
+}
+
+.filter-panel .filter-form {
+  border-top: 1px solid var(--line);
+  padding: 18px;
 }
 
 .filter-form,
@@ -190,6 +187,25 @@ h2 {
   grid-template-columns: 1fr;
 }
 
+.quick-form {
+  display: grid;
+  gap: 18px;
+}
+
+.quick-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.time-grid {
+  grid-template-columns: 1fr 1fr 1fr auto;
+  align-items: end;
+}
+
+.main-fields {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 label {
   display: grid;
   gap: 6px;
@@ -205,7 +221,8 @@ textarea {
   border-radius: 8px;
   background: #fff;
   color: var(--text);
-  padding: 10px 11px;
+  min-height: 50px;
+  padding: 11px 12px;
   font: inherit;
   font-weight: 500;
 }
@@ -223,6 +240,54 @@ textarea:focus,
   border-color: var(--focus);
 }
 
+.input-action {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.duration-preview {
+  min-width: 120px;
+  min-height: 50px;
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f4f7f9;
+  padding: 8px 12px;
+}
+
+.duration-preview span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.duration-preview strong {
+  font-size: 1.1rem;
+}
+
+.note-field {
+  display: grid;
+}
+
+.optional-fields {
+  border-top: 1px solid var(--line);
+  padding-top: 6px;
+}
+
+.optional-fields summary {
+  cursor: pointer;
+  color: var(--primary);
+  font-weight: 800;
+  padding: 10px 0;
+}
+
+.optional-fields .form-grid {
+  margin: 8px 0 0;
+}
+
 .error {
   color: var(--danger);
   font-size: 0.92rem;
@@ -237,11 +302,11 @@ textarea:focus,
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .summary-item {
-  min-height: 98px;
+  min-height: 82px;
   display: grid;
   align-content: space-between;
   gap: 8px;
@@ -347,8 +412,14 @@ dd {
   }
 
   .filter-form,
-  .form-grid {
+  .form-grid,
+  .time-grid,
+  .main-fields {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .duration-preview {
+    min-width: 0;
   }
 }
 
@@ -357,7 +428,6 @@ dd {
     width: min(100% - 24px, 1120px);
   }
 
-  .header-row,
   .page-head,
   .toolbar {
     align-items: stretch;
@@ -368,13 +438,11 @@ dd {
     font-size: 2rem;
   }
 
-  .top-nav,
   .toolbar-actions,
   .form-actions {
     align-items: stretch;
   }
 
-  .top-nav .button,
   .toolbar-actions .button,
   .form-actions .button,
   .toolbar-actions form,
@@ -384,9 +452,29 @@ dd {
 
   .filter-form,
   .form-grid,
+  .time-grid,
+  .main-fields,
   .detail-grid,
-  .summary-grid {
+  .input-action {
     grid-template-columns: 1fr;
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quick-form {
+    padding: 14px;
+  }
+
+  .sticky-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin: 0 -14px -14px;
+    border-top: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.96);
+    padding: 12px 14px;
   }
 
   .table-shell {
@@ -447,5 +535,11 @@ dd {
 
   .row-actions .button {
     width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -29,7 +29,7 @@ function emptyEntry() {
     datum: new Date().toISOString().slice(0, 10),
     beginn_uhrzeit: "",
     ende_uhrzeit: "",
-    dauer_minuten: "",
+    dauer_minuten: null,
     wahrnehmungsort: "Wohnung",
     laermart: "Trampeln",
     intensitaet: "3",
@@ -73,6 +73,7 @@ app.get("/entries/new", (req, res) => {
     action: "/entries",
     entry: emptyEntry(),
     errors: {},
+    dirtyOnLoad: false,
     submitLabel: "Eintrag speichern"
   });
 });
@@ -89,6 +90,7 @@ app.post(
         action: "/entries",
         entry: result.data,
         errors: result.errors,
+        dirtyOnLoad: true,
         submitLabel: "Eintrag speichern"
       });
     }
@@ -137,6 +139,7 @@ app.get(
       action: `/entries/${entry.id}`,
       entry,
       errors: {},
+      dirtyOnLoad: false,
       submitLabel: "Änderungen speichern"
     });
   })
@@ -158,6 +161,7 @@ app.post(
         action: `/entries/${id}`,
         entry: { id, ...result.data },
         errors: result.errors,
+        dirtyOnLoad: true,
         submitLabel: "Änderungen speichern"
       });
     }

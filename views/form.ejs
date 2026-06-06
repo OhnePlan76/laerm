@@ -4,10 +4,11 @@
   <div>
     <h1><%= heading %></h1>
   </div>
+  <a class="button" href="/">Zurück</a>
 </section>
 
-<form class="entry-form panel" method="post" action="<%= action %>" novalidate>
-  <div class="form-grid">
+<form class="entry-form quick-form panel" method="post" action="<%= action %>" data-dirty-check data-dirty-on-load="<%= dirtyOnLoad ? "true" : "false" %>" novalidate>
+  <div class="quick-grid time-grid">
     <label>
       Datum
       <input type="date" name="datum" value="<%= entry.datum || "" %>" required>
@@ -16,20 +17,37 @@
 
     <label>
       Beginn
-      <input type="time" name="beginn_uhrzeit" value="<%= entry.beginn_uhrzeit || "" %>" required>
+      <span class="input-action">
+        <input type="time" name="beginn_uhrzeit" value="<%= entry.beginn_uhrzeit || "" %>" required>
+        <button class="button button-quiet" type="button" data-time-now="beginn_uhrzeit">Jetzt</button>
+      </span>
       <% if (errors.beginn_uhrzeit) { %><span class="error"><%= errors.beginn_uhrzeit %></span><% } %>
     </label>
 
     <label>
       Ende
-      <input type="time" name="ende_uhrzeit" value="<%= entry.ende_uhrzeit || "" %>">
+      <span class="input-action">
+        <input type="time" name="ende_uhrzeit" value="<%= entry.ende_uhrzeit || "" %>" required>
+        <button class="button button-quiet" type="button" data-time-now="ende_uhrzeit">Jetzt</button>
+      </span>
       <% if (errors.ende_uhrzeit) { %><span class="error"><%= errors.ende_uhrzeit %></span><% } %>
     </label>
 
+    <div class="duration-preview" aria-live="polite">
+      <span>Dauer</span>
+      <strong data-duration-output><%= Number.isInteger(entry.dauer_minuten) ? `${entry.dauer_minuten} Min.` : "-" %></strong>
+    </div>
+  </div>
+
+  <div class="quick-grid main-fields">
     <label>
-      Dauer in Minuten
-      <input type="number" name="dauer_minuten" value="<%= entry.dauer_minuten ?? "" %>" min="0" step="1" required>
-      <% if (errors.dauer_minuten) { %><span class="error"><%= errors.dauer_minuten %></span><% } %>
+      Lärmart
+      <select name="laermart" required>
+        <% options.laermarten.forEach((option) => { %>
+          <option value="<%= option %>" <%= entry.laermart === option ? "selected" : "" %>><%= option %></option>
+        <% }) %>
+      </select>
+      <% if (errors.laermart) { %><span class="error"><%= errors.laermart %></span><% } %>
     </label>
 
     <label>
@@ -43,13 +61,13 @@
     </label>
 
     <label>
-      Lärmart
-      <select name="laermart" required>
-        <% options.laermarten.forEach((option) => { %>
-          <option value="<%= option %>" <%= entry.laermart === option ? "selected" : "" %>><%= option %></option>
+      Auswirkung
+      <select name="auswirkung" required>
+        <% options.auswirkungen.forEach((option) => { %>
+          <option value="<%= option %>" <%= entry.auswirkung === option ? "selected" : "" %>><%= option %></option>
         <% }) %>
       </select>
-      <% if (errors.laermart) { %><span class="error"><%= errors.laermart %></span><% } %>
+      <% if (errors.auswirkung) { %><span class="error"><%= errors.auswirkung %></span><% } %>
     </label>
 
     <label>
@@ -61,44 +79,39 @@
       </select>
       <% if (errors.intensitaet) { %><span class="error"><%= errors.intensitaet %></span><% } %>
     </label>
-
-    <label>
-      Auswirkung
-      <select name="auswirkung" required>
-        <% options.auswirkungen.forEach((option) => { %>
-          <option value="<%= option %>" <%= entry.auswirkung === option ? "selected" : "" %>><%= option %></option>
-        <% }) %>
-      </select>
-      <% if (errors.auswirkung) { %><span class="error"><%= errors.auswirkung %></span><% } %>
-    </label>
   </div>
 
-  <div class="form-grid single">
-    <label>
-      Vermuteter Ursprung
-      <input type="text" name="vermuteter_ursprung" value="<%= entry.vermuteter_ursprung || "" %>">
-    </label>
+  <label class="note-field">
+    Notiz
+    <textarea name="notiz" rows="4"><%= entry.notiz || "" %></textarea>
+  </label>
 
-    <label>
-      Zeugen
-      <input type="text" name="zeugen" value="<%= entry.zeugen || "" %>">
-    </label>
+  <details class="optional-fields" <%= entry.vermuteter_ursprung || entry.zeugen || entry.pruefungshinweis ? "open" : "" %>>
+    <summary>Optionale Details</summary>
+    <div class="form-grid single">
+      <label>
+        Vermuteter Ursprung
+        <input type="text" name="vermuteter_ursprung" value="<%= entry.vermuteter_ursprung || "" %>">
+      </label>
 
-    <label>
-      Notiz
-      <textarea name="notiz" rows="5"><%= entry.notiz || "" %></textarea>
-    </label>
+      <label>
+        Zeugen
+        <input type="text" name="zeugen" value="<%= entry.zeugen || "" %>">
+      </label>
 
-    <label>
-      Prüfungshinweis
-      <textarea name="pruefungshinweis" rows="4"><%= entry.pruefungshinweis || "" %></textarea>
-    </label>
-  </div>
+      <label>
+        Prüfungshinweis
+        <textarea name="pruefungshinweis" rows="3"><%= entry.pruefungshinweis || "" %></textarea>
+      </label>
+    </div>
+  </details>
 
-  <div class="form-actions">
+  <div class="form-actions sticky-actions">
     <button class="button button-primary" type="submit"><%= submitLabel %></button>
     <a class="button" href="/">Abbrechen</a>
   </div>
 </form>
+
+<script src="/form-guard.js" defer></script>
 
 <%- include("partials/footer") %>
