@@ -1,0 +1,71 @@
+<%- include("partials/header", { title }) %>
+
+<section class="page-head">
+  <div>
+    <h1>Eintrag #<%= entry.id %></h1>
+    <p class="muted">Erstellt am <%= entry.created_at %>, zuletzt aktualisiert am <%= entry.updated_at %>.</p>
+  </div>
+  <div class="toolbar-actions">
+    <a class="button" href="/entries/<%= entry.id %>/edit">Bearbeiten</a>
+    <form method="post" action="/entries/<%= entry.id %>/delete" onsubmit="return confirm('Diesen Eintrag wirklich löschen?');">
+      <button class="button button-danger" type="submit">Löschen</button>
+    </form>
+  </div>
+</section>
+
+<section class="detail-panel">
+  <dl class="detail-grid">
+    <div>
+      <dt>Datum</dt>
+      <dd><%= entry.datum %></dd>
+    </div>
+    <div>
+      <dt>Beginn</dt>
+      <dd><%= entry.beginn_uhrzeit %></dd>
+    </div>
+    <div>
+      <dt>Ende</dt>
+      <dd><%= entry.ende_uhrzeit || "-" %></dd>
+    </div>
+    <div>
+      <dt>Dauer</dt>
+      <dd><%= entry.dauer_minuten %> Minuten</dd>
+    </div>
+    <div>
+      <dt>Wahrnehmungsort</dt>
+      <dd><%= entry.wahrnehmungsort %></dd>
+    </div>
+    <div>
+      <dt>Lärmart</dt>
+      <dd><%= entry.laermart %></dd>
+    </div>
+    <div>
+      <dt>Intensität</dt>
+      <dd><%= entry.intensitaet %>/5</dd>
+    </div>
+    <div>
+      <dt>Auswirkung</dt>
+      <dd><%= entry.auswirkung %></dd>
+    </div>
+    <div>
+      <dt>Vermuteter Ursprung</dt>
+      <dd><%= entry.vermuteter_ursprung || "-" %></dd>
+    </div>
+    <div>
+      <dt>Zeugen</dt>
+      <dd><%= entry.zeugen || "-" %></dd>
+    </div>
+  </dl>
+
+  <div class="text-block">
+    <h2>Notiz</h2>
+    <p><%= entry.notiz || "-" %></p>
+  </div>
+
+  <div class="text-block">
+    <h2>Prüfungshinweis</h2>
+    <p><%= entry.pruefungshinweis || "-" %></p>
+  </div>
+</section>
+
+<%- include("partials/footer") %>

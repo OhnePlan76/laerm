@@ -1,0 +1,22 @@
+{
+  "name": "laermprotokoll",
+  "version": "1.0.0",
+  "description": "Schlichte Webapp zur schriftlichen Dokumentation von Laermereignissen.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "migrate": "node src/migrate.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "pdfkit": "^0.15.2",
+    "pg": "^8.13.1"
+  },
+  "license": "MIT"
+}

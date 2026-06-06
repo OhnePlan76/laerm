@@ -1,0 +1,100 @@
+<%- include("partials/header", { title }) %>
+
+<section class="page-head">
+  <div>
+    <h1>Lärmprotokoll</h1>
+  </div>
+  <a class="button button-primary" href="/entries/new">Neuen Eintrag erfassen</a>
+</section>
+
+<section class="panel">
+  <form class="filter-form" method="get" action="/">
+    <label>
+      Datum von
+      <input type="date" name="von" value="<%= filters.von %>">
+    </label>
+    <label>
+      Datum bis
+      <input type="date" name="bis" value="<%= filters.bis %>">
+    </label>
+    <div class="form-actions compact">
+      <button class="button button-primary" type="submit">Filtern</button>
+      <a class="button" href="/">Zurücksetzen</a>
+    </div>
+  </form>
+</section>
+
+<% const exportQuery = new URLSearchParams(Object.entries(filters).filter((entry) => entry[1])).toString(); %>
+
+<section class="summary-grid" aria-label="Zusammenfassung">
+  <div class="summary-item">
+    <span>Anzahl Vorfälle</span>
+    <strong><%= summary.total %></strong>
+  </div>
+  <div class="summary-item">
+    <span>Mit geweckt</span>
+    <strong><%= summary.geweckt %></strong>
+  </div>
+  <div class="summary-item">
+    <span>22:00 bis 06:00</span>
+    <strong><%= summary.nachts %></strong>
+  </div>
+  <div class="summary-item">
+    <span>Häufigste Lärmart</span>
+    <strong><%= summary.haeufigste_laermart %></strong>
+  </div>
+  <div class="summary-item">
+    <span>Häufigster Ort</span>
+    <strong><%= summary.haeufigster_wahrnehmungsort %></strong>
+  </div>
+</section>
+
+<section class="toolbar">
+  <h2>Einträge</h2>
+  <div class="toolbar-actions">
+    <a class="button" href="/export.csv<%= exportQuery ? `?${exportQuery}` : "" %>">CSV exportieren</a>
+    <a class="button" href="/export.pdf<%= exportQuery ? `?${exportQuery}` : "" %>">PDF exportieren</a>
+  </div>
+</section>
+
+<% if (entries.length === 0) { %>
+  <section class="empty-state">
+    <h2>Keine Einträge</h2>
+    <p class="muted">Für den gewählten Zeitraum wurden keine Lärmereignisse erfasst.</p>
+  </section>
+<% } else { %>
+  <div class="table-shell">
+    <table>
+      <thead>
+        <tr>
+          <th>Datum</th>
+          <th>Beginn</th>
+          <th>Dauer</th>
+          <th>Ort</th>
+          <th>Lärmart</th>
+          <th>Intensität</th>
+          <th>Auswirkung</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% entries.forEach((entry) => { %>
+          <tr>
+            <td data-label="Datum"><%= entry.datum %></td>
+            <td data-label="Beginn"><%= entry.beginn_uhrzeit %></td>
+            <td data-label="Dauer"><%= entry.dauer_minuten %> Min.</td>
+            <td data-label="Ort"><%= entry.wahrnehmungsort %></td>
+            <td data-label="Lärmart"><%= entry.laermart %></td>
+            <td data-label="Intensität"><%= entry.intensitaet %>/5</td>
+            <td data-label="Auswirkung"><%= entry.auswirkung %></td>
+            <td class="row-actions">
+              <a class="button button-small" href="/entries/<%= entry.id %>">Details</a>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+
+<%- include("partials/footer") %>

@@ -1,0 +1,104 @@
+<%- include("partials/header", { title }) %>
+
+<section class="page-head">
+  <div>
+    <h1><%= heading %></h1>
+  </div>
+</section>
+
+<form class="entry-form panel" method="post" action="<%= action %>" novalidate>
+  <div class="form-grid">
+    <label>
+      Datum
+      <input type="date" name="datum" value="<%= entry.datum || "" %>" required>
+      <% if (errors.datum) { %><span class="error"><%= errors.datum %></span><% } %>
+    </label>
+
+    <label>
+      Beginn
+      <input type="time" name="beginn_uhrzeit" value="<%= entry.beginn_uhrzeit || "" %>" required>
+      <% if (errors.beginn_uhrzeit) { %><span class="error"><%= errors.beginn_uhrzeit %></span><% } %>
+    </label>
+
+    <label>
+      Ende
+      <input type="time" name="ende_uhrzeit" value="<%= entry.ende_uhrzeit || "" %>">
+      <% if (errors.ende_uhrzeit) { %><span class="error"><%= errors.ende_uhrzeit %></span><% } %>
+    </label>
+
+    <label>
+      Dauer in Minuten
+      <input type="number" name="dauer_minuten" value="<%= entry.dauer_minuten ?? "" %>" min="0" step="1" required>
+      <% if (errors.dauer_minuten) { %><span class="error"><%= errors.dauer_minuten %></span><% } %>
+    </label>
+
+    <label>
+      Wahrnehmungsort
+      <select name="wahrnehmungsort" required>
+        <% options.wahrnehmungsorte.forEach((option) => { %>
+          <option value="<%= option %>" <%= entry.wahrnehmungsort === option ? "selected" : "" %>><%= option %></option>
+        <% }) %>
+      </select>
+      <% if (errors.wahrnehmungsort) { %><span class="error"><%= errors.wahrnehmungsort %></span><% } %>
+    </label>
+
+    <label>
+      Lärmart
+      <select name="laermart" required>
+        <% options.laermarten.forEach((option) => { %>
+          <option value="<%= option %>" <%= entry.laermart === option ? "selected" : "" %>><%= option %></option>
+        <% }) %>
+      </select>
+      <% if (errors.laermart) { %><span class="error"><%= errors.laermart %></span><% } %>
+    </label>
+
+    <label>
+      Intensität
+      <select name="intensitaet" required>
+        <% [1, 2, 3, 4, 5].forEach((option) => { %>
+          <option value="<%= option %>" <%= Number(entry.intensitaet) === option ? "selected" : "" %>><%= option %></option>
+        <% }) %>
+      </select>
+      <% if (errors.intensitaet) { %><span class="error"><%= errors.intensitaet %></span><% } %>
+    </label>
+
+    <label>
+      Auswirkung
+      <select name="auswirkung" required>
+        <% options.auswirkungen.forEach((option) => { %>
+          <option value="<%= option %>" <%= entry.auswirkung === option ? "selected" : "" %>><%= option %></option>
+        <% }) %>
+      </select>
+      <% if (errors.auswirkung) { %><span class="error"><%= errors.auswirkung %></span><% } %>
+    </label>
+  </div>
+
+  <div class="form-grid single">
+    <label>
+      Vermuteter Ursprung
+      <input type="text" name="vermuteter_ursprung" value="<%= entry.vermuteter_ursprung || "" %>">
+    </label>
+
+    <label>
+      Zeugen
+      <input type="text" name="zeugen" value="<%= entry.zeugen || "" %>">
+    </label>
+
+    <label>
+      Notiz
+      <textarea name="notiz" rows="5"><%= entry.notiz || "" %></textarea>
+    </label>
+
+    <label>
+      Prüfungshinweis
+      <textarea name="pruefungshinweis" rows="4"><%= entry.pruefungshinweis || "" %></textarea>
+    </label>
+  </div>
+
+  <div class="form-actions">
+    <button class="button button-primary" type="submit"><%= submitLabel %></button>
+    <a class="button" href="/">Abbrechen</a>
+  </div>
+</form>
+
+<%- include("partials/footer") %>
